@@ -2,9 +2,9 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Register = () => {
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,7 +20,10 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/register`, formData);
+      const res = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/register`,
+        formData
+      );
       console.log("Registration successful:", res.data);
       toast.success("Registration successful!");
       setTimeout(() => navigate("/login"), 2000);
@@ -36,7 +39,7 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Left Side */}
-<div className="hidden md:flex w-1/2 bg-gradient-to-br from-[#802BB1] to-[#2B283E] text-white flex-col items-center justify-center p-10">
+        <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[#802BB1] to-[#2B283E] text-white flex-col items-center justify-center p-10">
           <div className="bg-white text-[#802BB1] p-5 rounded-full mb-6">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +68,9 @@ const Register = () => {
         </div>
 
         {/* Right Side - Form */}
-<div className="w-full md:w-1/2 p-6 md:p-10">          <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
+        <div className="w-full md:w-1/2 p-6 md:p-10">
+          {" "}
+          <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
             <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center">
               Create Account
             </h2>
@@ -115,14 +120,28 @@ const Register = () => {
             </div>
 
             <div className="flex justify-center gap-4">
-              <button className="flex-1 border py-2 rounded flex items-center justify-center gap-2">
-                <img
-                  src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  className="w-5 h-5"
-                  alt="google"
-                />{" "}
-                Google
-              </button>
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  try {
+                    const res = await axios.post(
+                      `${import.meta.env.VITE_SERVER_URL}/google-login`,
+                      {
+                        token: credentialResponse.credential,
+                      }
+                    );
+
+                    const { token, user } = res.data;
+                    localStorage.setItem("userToken", token);
+                    localStorage.setItem("user", JSON.stringify(user));
+
+                    toast.success("Logged in with Google!");
+                    navigate("/");
+                  } catch (error) {
+                    toast.error("Google login failed");
+                  }
+                }}
+                onError={() => toast.error("Google Login Failed")}
+              />
             </div>
 
             <p className="text-sm text-center mt-6">
