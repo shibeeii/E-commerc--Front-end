@@ -117,7 +117,7 @@ const Login = () => {
                 onSuccess={async (credentialResponse) => {
                   try {
                     const res = await axios.post(
-                      `${import.meta.env.VITE_SERVER_URL}/google-login`,
+                      'http://localhost:7000/google-login',
                       {
                         token: credentialResponse.credential,
                       }
