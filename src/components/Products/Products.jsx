@@ -6,8 +6,8 @@ import "slick-carousel/slick/slick-theme.css";
 
 import ImgMobile from "../../assets/product/12.png";
 import ImgLaptop from "../../assets/product/laptop.png";
-import ImgElectronics from "../../assets/product/Home-Appliance-Background-PNG.png";
-import ImgFashion from "../../assets/product/fashion.png";
+import ImgElectronics from "../../assets/product/Home-Appliance-PNG-Image.png";
+import ImgFashion from "../../assets/product/shop.png";
 import ImgBooks from "../../assets/product/book.png";
 
 const Products = () => {
@@ -39,34 +39,50 @@ const Products = () => {
   return (
     <div className="mt-14 mb-12">
       <div className="container">
-        {/* Header section */}
+        {/* Header */}
         <div className="text-center mb-10 max-w-[600px] mx-auto">
-          <p className="text-sm text-primary">Top Selling Products for you</p>
-          <h1 className="text-3xl font-bold">Products</h1>
-          <p className="text-xs text-gray-400">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit asperiores modi
+          <p className="text-sm text-primary font-medium">
+            Top Selling Products for you
+          </p>
+          <h1 className="text-3xl font-bold mb-2">Products</h1>
+          <p className="text-xs text-gray-500">
+            Discover our most popular picks loved by customers worldwide. From
+            the latest tech to everyday essentials, shop the products everyone’s
+            talking about!
           </p>
         </div>
 
-        {/* Carousel Section */}
+        {/* Carousel */}
         <Slider {...settings}>
           {categories.map((cat) => (
-            <div key={cat.id} className="px-2">
+            <div key={cat.id} className="px-4">
               <Link to={cat.link}>
-                <div className="group my-10 w-[260px] h-[300px] rounded-2xl bg-gray-200 dark:bg-gray-800 shadow-xl hover:bg-primary hover:text-white duration-300 flex flex-col items-center justify-between p-4 mx-auto transition-transform hover:scale-105">
-                  {/* Image */}
-                  <div className="h-[250px] w-[200px] flex items-center justify-center">
+                <div className="relative group my-10 w-[250px] h-[300px] rounded-3xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:rotate-1 hover:scale-[1.05] bg-white/10 backdrop-blur-lg shadow-xl border border-white/20">
+                  {/* Glowing Background Orb */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-40 h-40 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 blur-3xl opacity-70 group-hover:scale-125 transition-transform duration-500"></div>
+                  </div>
+
+                  {/* Floating PNG Image */}
+                  <div className="relative z-10 h-[200px] flex justify-center items-center animate-[float_3s_ease-in-out_infinite]">
                     <img
                       src={cat.img}
                       alt={cat.title}
-                      className="h-full w-full object-contain"
+                      className="h-[180px] object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>
 
-                  {/* Title inside the card */}
-                  <h3 className="font-semibold text-center group-hover:text-white">
+                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 
+                   bg-white/80 backdrop-blur-md px-6 py-1 rounded-full shadow-md border border-white/30 
+                   text-gray-900 font-semibold text-lg 
+                   group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/50 
+                     transition-all duration-500"
+                  >
                     {cat.title}
-                  </h3>
+                  </div>
+
+                  {/* Hover Glow Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
               </Link>
             </div>

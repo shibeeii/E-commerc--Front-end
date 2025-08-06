@@ -14,6 +14,9 @@ import Register from "./Pages/Register";
 import CheckoutPage from "./Pages/CheckoutPage";
 import Wishlist from "./Pages/Wishlist";
 import MyOrders from "./Pages/MyOrders";
+import TopProducts from "./components/TopProducts/TopProducts";
+import TopProductsPage from "./TopProductsPage";
+import OfferProducts from "./Pages/OfferProducts";
 
 const App = () => {
   const [loginPopup, setloginPopup] = React.useState(false);
@@ -55,6 +58,11 @@ const App = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/wishlist" element={<Wishlist/>} />
         <Route path="/my-orders" element={<MyOrders/>} />
+        <Route path="/best-products" element={<TopProductsPage handleOrderPopup={handleloginPopup} />} />
+        <Route path="/offer-products" element={<OfferProducts handleOrderPopup={handleloginPopup} />} />
+
+
+
 
 
 

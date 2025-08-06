@@ -7,9 +7,9 @@ import img3 from "../assets/checkout/Paypal.png";
 import img4 from "../assets/checkout/Upi.png";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
-
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
@@ -22,9 +22,10 @@ const CheckoutPage = () => {
     state: "",
     pincode: "",
   });
+
+  const navigate = useNavigate();
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -35,7 +36,9 @@ const CheckoutPage = () => {
   const fetchCart = async () => {
     if (!user?._id) return;
     try {
-      const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/cart/${user._id}`);
+      const res = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/cart/${user._id}`
+      );
       setCart(res.data.items || []);
       setTotal(res.data.total || 0);
     } catch (err) {
@@ -48,7 +51,9 @@ const CheckoutPage = () => {
 
   const fetchAddresses = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/address/${user._id}`);
+      const res = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/address/${user._id}`
+      );
       setAddresses(res.data);
     } catch (err) {
       console.error("Error fetching addresses:", err);
@@ -85,8 +90,6 @@ const CheckoutPage = () => {
         });
         toast.success("Address added successfully!");
       }
-
-      setShowModal(false);
       setAddress({
         fullName: "",
         phone: "",
@@ -136,13 +139,11 @@ const CheckoutPage = () => {
       toast.warn("Please select a shipping address.");
       return;
     }
-
     try {
       const { data: order } = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/payment/create-order`,
         { amount: total }
       );
-
       const options = {
         key: "rzp_test_V2IgvO00CCx2sM",
         amount: order.amount,
@@ -168,18 +169,22 @@ const CheckoutPage = () => {
                 shippingAddress: selectedAddress,
               }
             );
-
             if (verify.data.success) {
               toast.success("✅ Payment successful & order placed!");
+              await axios.delete(
+                `${import.meta.env.VITE_SERVER_URL}/cart/clear/${user._id}`
+              );
+              setCart([]);
+              setTotal(0);
+              setTimeout(() => navigate("/my-orders"), 1000);
             } else {
-              toast.error("❌ Payment verification failed.");
+              toast.error("Payment verification failed.");
             }
           } catch (err) {
             console.error("Error verifying payment:", err);
-            toast.error("❌ Something went wrong during payment verification.");
+            toast.error("Something went wrong during payment verification.");
           }
         },
-
         prefill: {
           name: selectedAddress.fullName,
           email: user?.email,
@@ -187,7 +192,6 @@ const CheckoutPage = () => {
         },
         theme: { color: "#0e7490" },
       };
-
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
@@ -198,132 +202,13 @@ const CheckoutPage = () => {
 
   return (
     <>
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg mx-4">
-            <h2 className="text-xl font-semibold mb-4 text-black">
-              {address._id ? "Edit Address" : "Add New Address"}
-            </h2>
-            <form
-              onSubmit={submit}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            >
-              <input
-                type="text"
-                name="fullName"
-                value={address.fullName}
-                onChange={handleAddressChange}
-                placeholder="Full Name"
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="phone"
-                value={address.phone}
-                onChange={handleAddressChange}
-                placeholder="Phone"
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="addressLine"
-                value={address.addressLine}
-                onChange={handleAddressChange}
-                placeholder="Address Line"
-                className="border p-2 rounded col-span-full"
-              />
-              <input
-                type="text"
-                name="city"
-                value={address.city}
-                onChange={handleAddressChange}
-                placeholder="City"
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="state"
-                value={address.state}
-                onChange={handleAddressChange}
-                placeholder="State"
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="pincode"
-                value={address.pincode}
-                onChange={handleAddressChange}
-                placeholder="Pincode"
-                className="border p-2 rounded"
-              />
-              <div className="col-span-full flex justify-end gap-3 mt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setAddress({
-                      fullName: "",
-                      phone: "",
-                      addressLine: "",
-                      city: "",
-                      state: "",
-                      pincode: "",
-                    });
-                  }}
-                  className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-primary hover:bg-teal-700 text-white px-4 py-2 rounded"
-                >
-                  {address._id ? "Update" : "Save"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
+      <ToastContainer position="top-center" autoClose={3000} theme="light" />
       <div className="flex flex-col lg:flex-row max-w-6xl mx-auto p-6 gap-10 mt-12">
-        {/* Modal remains unchanged */}
-
+        {/* Left Section */}
         <div className="w-full lg:w-1/2 space-y-10">
-          {/* Saved Addresses as Radio Options */}
+          {/* Saved Addresses */}
           <div className="border p-6 rounded-lg bg-white shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-black">Saved Addresses</h3>
-              <button
-                onClick={() => {
-                  setAddress({
-                    fullName: "",
-                    phone: "",
-                    addressLine: "",
-                    city: "",
-                    state: "",
-                    pincode: "",
-                  });
-                  setShowModal(true);
-                }}
-                className="text-sm bg-gray-800 p-2 rounded text-white"
-              >
-                + Add New Address
-              </button>
-            </div>
-
+            <h3 className="text-xl font-bold text-black mb-4">Saved Addresses</h3>
             <div className="space-y-4">
               {addresses.map((addr) => (
                 <label
@@ -340,17 +225,14 @@ const CheckoutPage = () => {
                     checked={selectedAddress?._id === addr._id}
                     onChange={() => {
                       setSelectedAddress(addr);
-                      setAddress(addr); // fill form
+                      setAddress(addr);
                     }}
                     className="mt-1 accent-blue-600"
                   />
                   <div className="flex-1 text-sm text-gray-700">
-                    <div className="font-semibold text-black">
-                      {addr.fullName}
-                    </div>
+                    <div className="font-semibold text-black">{addr.fullName}</div>
                     <div>
-                      {addr.addressLine}, {addr.city}, {addr.state} -{" "}
-                      {addr.pincode}
+                      {addr.addressLine}, {addr.city}, {addr.state} - {addr.pincode}
                     </div>
                     <div>📞 {addr.phone}</div>
                   </div>
@@ -378,11 +260,10 @@ const CheckoutPage = () => {
               ))}
             </div>
           </div>
-          {/* Editable Shipping Address Form */}
+
+          {/* Shipping Form */}
           <div className="border p-6 rounded-lg bg-white shadow-sm">
-            <h3 className="text-xl font-bold mb-4 text-black">
-              Shipping Details
-            </h3>
+            <h3 className="text-xl font-bold mb-4 text-black">Shipping Details</h3>
             <form
               onSubmit={submit}
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
@@ -445,24 +326,10 @@ const CheckoutPage = () => {
           </div>
         </div>
 
-        {/* Right Section - Order Summary + Cart Products */}
+        {/* Right Section */}
         <div className="w-full lg:w-1/2 border p-6 rounded-lg shadow-md bg-white h-fit space-y-6">
-          {/* Shipping To */}
-          {selectedAddress && (
-            <div className="p-4 border rounded bg-white shadow text-sm">
-              <h4 className="text-black font-semibold mb-2">Shipping To:</h4>
-              <p>{selectedAddress.fullName}</p>
-              <p>
-                {selectedAddress.addressLine}, {selectedAddress.city},{" "}
-                {selectedAddress.state} - {selectedAddress.pincode}
-              </p>
-              <p>📞 {selectedAddress.phone}</p>
-            </div>
-          )}
-
-          {/* Cart Items in Order Summary */}
           {cart.length > 0 && (
-            <div className="space-y-4">
+            <>
               <h3 className="text-xl font-bold text-black">🛒 Order Summary</h3>
               {cart.map((item) => (
                 <div
@@ -479,9 +346,7 @@ const CheckoutPage = () => {
                       <h4 className="font-medium text-black">
                         {item.productId.productname}
                       </h4>
-                      <p className="text-sm text-gray-600">
-                        Qty: {item.quantity}
-                      </p>
+                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-between">
@@ -503,28 +368,20 @@ const CheckoutPage = () => {
                 <span>Delivery</span>
                 <span className="text-sm text-gray-500">Free</span>
               </div>
-            </div>
+            </>
           )}
-
-          {/* Payment CTA */}
           <button
             onClick={handlePayment}
             className="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-3 rounded-lg font-semibold shadow"
           >
             Confirm & Pay
           </button>
-
-          {/* Payment Logos */}
           <div className="flex justify-center flex-wrap gap-3 mt-4">
             <img src={img1} alt="Visa" className="h-6" />
             <img src={img2} alt="GPay" className="h-6" />
             <img src={img3} alt="PayPal" className="h-6" />
             <img src={img4} alt="UPI" className="h-6" />
           </div>
-
-          <p className="text-sm text-gray-600 mt-4 text-center">
-            Got a discount code? Add it in the next step.
-          </p>
         </div>
       </div>
     </>

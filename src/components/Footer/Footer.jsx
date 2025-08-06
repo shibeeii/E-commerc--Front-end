@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import footerLogo from "../../assets/logo.png";
 import Banner from "../../assets/website/footter-pattern.jpg";
 import {
@@ -8,6 +8,8 @@ import {
   FaLocationArrow,
   FaMobileAlt,
 } from "react-icons/fa";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const BannerImg = {
   backgroundImage: `url(${Banner})`,
@@ -19,103 +21,131 @@ const BannerImg = {
 };
 
 const FooterLinks = [
-  {
-    title: "Home",
-    link: "/#",
-  },
-  {
-    title: "About",
-    link: "/#about",
-  },
-  {
-    title: "Contact",
-    link: "/#contact",
-  },
-  {
-    title: "Blog",
-    link: "/#blog",
-  },
+  { title: "Home", link: "/#" },
+  { title: "About", link: "/#about" },
+  { title: "Contact", link: "/#contact" },
+  { title: "Blog", link: "/#blog" },
 ];
 
 const Footer = () => {
+  const [name, setName] = useState("");
+  const [testimonial, setTestimonial] = useState("");
+
+  const handleSubmit = async () => {
+    if (!testimonial.trim()) {
+      toast.warn("Please write your testimonial.");
+      return;
+    }
+    try {
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/testimonials`, {
+        name: name.trim() || "Anonymous",
+        text: testimonial,
+      });
+      toast.success("Thanks for your feedback!");
+      setName("");
+      setTestimonial("");
+    } catch (err) {
+      console.error("Error adding testimonial:", err);
+      toast.error("Failed to submit testimonial.");
+    }
+  };
+
   return (
     <div style={BannerImg} className="text-white">
-      <div className="container">
-        <div data-aos="zoom-in" className="grid md:grid-cols-3 pb-44 pt-5">
-          {/* company details */}
-          <div className="py-8 px-4">
-            <h1 className="sm:text-3xl text-xl font-bold sm:text-left text-justify mb-3 flex items-center gap-3">
-              <img src={footerLogo} alt="" className="max-w-[50px]" />
+      <div className="container py-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Logo & description */}
+          <div>
+            <h1 className="flex items-center gap-3 text-2xl font-bold mb-3">
+              <img src={footerLogo} alt="logo" className="max-w-[50px]" />
               Q-Mart
             </h1>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum in
-              beatae ea recusandae blanditiis veritatis.
+            <p className="text-gray-300 text-sm">
+              Innovating shopping experiences one product at a time.
             </p>
+            <div className="flex items-center gap-4 mt-4">
+              <a href="#">
+                <FaInstagram className="text-2xl hover:text-primary transition" />
+              </a>
+              <a href="#">
+                <FaFacebook className="text-2xl hover:text-primary transition" />
+              </a>
+              <a href="#">
+                <FaLinkedin className="text-2xl hover:text-primary transition" />
+              </a>
+            </div>
           </div>
 
-          {/* Footer Links */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 col-span-2 md:pl-10">
-            <div>
-              <div className="py-8 px-4">
-                <h1 className="sm:text-xl text-xl font-bold sm:text-left text-justify mb-3">
-                  Important Links
-                </h1>
-                <ul className="flex flex-col gap-3">
-                  {FooterLinks.map((link) => (
-                    <li
-                      className="cursor-pointer hover:text-primary hover:translate-x-1 duration-300 text-gray-200"
-                      key={link.title}
-                    >
-                      <span>{link.title}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div>
-              <div className="py-8 px-4">
-                <h1 className="sm:text-xl text-xl font-bold sm:text-left text-justify mb-3">
-                  Links
-                </h1>
-                <ul className="flex flex-col gap-3">
-                  {FooterLinks.map((link) => (
-                    <li
-                      className="cursor-pointer hover:text-primary hover:translate-x-1 duration-300 text-gray-200"
-                      key={link.title}
-                    >
-                      <span>{link.title}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          {/* Quick Links */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Quick Links</h2>
+            <ul className="space-y-2">
+              {FooterLinks.map((link) => (
+                <li
+                  key={link.title}
+                  className="text-gray-300 hover:text-primary cursor-pointer transition"
+                >
+                  {link.title}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* social links */}
-
-            <div>
-              <div className="flex items-center gap-3 mt-6">
-                <a href="#">
-                  <FaInstagram className="text-3xl" />
-                </a>
-                <a href="#">
-                  <FaFacebook className="text-3xl" />
-                </a>
-                <a href="#">
-                  <FaLinkedin className="text-3xl" />
-                </a>
-              </div>
-              <div className="mt-6">
-                <div className="flex items-center gap-3">
-                  <FaLocationArrow />
-                  <p>Kerala, India</p>
-                </div>
-                <div className="flex items-center gap-3 mt-3">
-                  <FaMobileAlt />
-                  <p>+91 123456789</p>
-                </div>
-              </div>
+          {/* Contact Info */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Get in Touch</h2>
+            <div className="flex items-center gap-3 mb-2">
+              <FaLocationArrow />
+              <p>Kerala, India</p>
             </div>
+            <div className="flex items-center gap-3">
+              <FaMobileAlt />
+              <p>+91 123456789</p>
+            </div>
+          </div>
+
+          {/* Testimonial Form */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Leave a Testimonial</h2>
+            <p className="text-gray-300 text-sm mb-3">
+              Share your experience with us.
+            </p>
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name (optional)"
+                className="p-2 rounded text-black"
+              />
+              <input
+                type="text"
+                value={testimonial}
+                onChange={(e) => setTestimonial(e.target.value)}
+                placeholder="Write your feedback..."
+                className="p-2 rounded text-black"
+              />
+              <button
+                onClick={handleSubmit}
+                className="bg-primary hover:bg-teal-700 text-white px-4 py-2 rounded"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="mt-10 border-t border-white/20 pt-4 flex flex-col md:flex-row justify-between text-sm text-gray-400">
+          <p>© {new Date().getFullYear()} Q-Mart. All rights reserved.</p>
+          <div className="flex gap-4">
+            <span className="cursor-pointer hover:text-primary">
+              Privacy Policy
+            </span>
+            <span className="cursor-pointer hover:text-primary">
+              Terms of Service
+            </span>
+            <span className="cursor-pointer hover:text-primary">Cookies</span>
           </div>
         </div>
       </div>

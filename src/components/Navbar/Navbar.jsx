@@ -1,131 +1,103 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo from "../../assets/logo.png";
-import { IoMdSearch } from "react-icons/io";
-import { FaCartShopping } from "react-icons/fa6";
-import { FaCaretDown, FaHeart } from "react-icons/fa";
+import { FaShoppingCart, FaCaretDown, FaHeart, FaBars, FaTimes } from "react-icons/fa";
 import DarkMode from "./DarkMode";
 import { CgProfile } from "react-icons/cg";
 import { Link } from "react-router-dom";
 
-
 const Menu = [
-  {
-    id: 1,
-    name: "Home",
-    link: "/",
-  },
-  {
-    id: 2,
-    name: "Mobiles",
-    link: "/mobiles",
-  },
-  {
-    id: 3,
-    name: "Laptops",
-    link: "/laptop",
-  },
-  {
-    id: 3,
-    name: "Fashion",
-    link: "/fashions",
-  },
-  {
-    id: 3,
-    name: "Electronics",
-    link: "/electronics",
-  },
+  { id: 1, name: "Home", link: "/" },
+  { id: 2, name: "Mobiles", link: "/mobiles" },
+  { id: 3, name: "Laptops", link: "/laptop" },
+  { id: 4, name: "Fashion", link: "/fashions" },
+  { id: 5, name: "Electronics", link: "/electronics" },
 ];
 
 const DropdownLinks = [
-  {
-    id: 1,
-    name: "Offer Products",
-    link: "/#",
-  },
-  {
-    id: 2,
-    name: "Best Selling",
-    link: "/#",
-  },
-  {
-    id: 3,
-    name: "Top Rated",
-    link: "/#",
-  },
+  { id: 1, name: "Offer Products", link: "/offer-products" },
+  { id: 3, name: "Best Products", link: "/best-products" },
 ];
 
 const Navbar = ({ handleloginPopup }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="shadow-md bg-white dark:bg-gray-900 dark:text-white duration-200 relative z-40">
-      {/* upper Navbar */}
+      {/* Upper Navbar */}
       <div className="bg-primary/80 py-2">
         <div className="container flex justify-between items-center">
-          <div>
-            <a
-              href="#"
-              className="font-bold text-2xl text-white sm:text-3xl flex gap-2"
+          {/* Logo */}
+          <Link to="/" className="font-bold text-lg sm:text-xl flex items-center gap-2 text-white">
+            <img src={Logo} alt="Logo" className="w-8 sm:w-9" />
+            Q-Mart
+          </Link>
+
+          {/* Right Side */}
+          <div className="flex items-center gap-3">
+            {/* Wishlist */}
+            <Link to="/wishlist">
+              <button className="bg-gradient-to-r from-primary to-secondary p-2 rounded-full flex items-center justify-center">
+                <FaHeart className="text-white text-lg" />
+              </button>
+            </Link>
+
+            {/* Cart */}
+            <Link to="/cart">
+              <button className="bg-gradient-to-r from-primary to-secondary p-2 rounded-full flex items-center justify-center">
+                <FaShoppingCart className="text-white text-lg" />
+              </button>
+            </Link>
+
+            {/* Profile */}
+            <button
+              onClick={handleloginPopup}
+              className="bg-gradient-to-r from-primary to-secondary p-2 rounded-full flex items-center justify-center"
             >
-              <img src={Logo} alt="Logo" className="w-10" />
-              Q-Mart
-            </a>
-          </div>
-
-          <div className="flex justify-between items-center gap-4">
-            {/* whishlist */}
-           <Link to={'/wishlist'}>
-              <button className="bg-gradient-to-r from-primary to-secondary transition-all duration-200 text-white  py-1 px-4 rounded-full flex items-center gap-3 group">
-                <FaHeart className="text-xl text-white drop-shadow-sm cursor-pointer" />
-              </button>
-           </Link>
-
-            {/* order button */}
-<Link to={'/cart'}>
-              <button className="bg-gradient-to-r from-primary to-secondary transition-all duration-200 text-white  py-1 px-4 rounded-full flex items-center gap-3 group">
-                <FaCartShopping className="text-xl text-white drop-shadow-sm cursor-pointer" />
-              </button>
-</Link>
-            <button onClick={()=>handleloginPopup()} className="bg-gradient-to-r from-primary to-secondary transition-all duration-200 text-white  py-1 px-4 rounded-full flex items-center gap-3 group">
-              <CgProfile className="text-xl text-white drop-shadow-sm cursor-pointer" />
+              <CgProfile className="text-white text-lg" />
             </button>
 
-            {/* Darkmode Switch */}
-            <div>
+            {/* Dark mode (smaller) */}
+            <div className="scale-90">
               <DarkMode />
             </div>
+
+            {/* Hamburger Menu (Mobile Only) */}
+            <button
+              className="sm:hidden text-2xl text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+            </button>
           </div>
         </div>
       </div>
-      {/* lower Navbar */}
-      <div data-aos="zoom-in" className="flex justify-center">
-        <ul className="sm:flex hidden items-center gap-4">
+
+      {/* Lower Navbar (Desktop) */}
+      <div className="sm:flex hidden justify-center">
+        <ul className="flex items-center gap-4">
           {Menu.map((data) => (
             <li key={data.id}>
-              <a
-                href={data.link}
-                className="inline-block px-4 hover:text-primary duration-200"
-              >
+              <Link to={data.link} className="px-4 hover:text-primary duration-200">
                 {data.name}
-              </a>
+              </Link>
             </li>
           ))}
-          {/* Simple Dropdown and Links */}
+          {/* Dropdown */}
           <li className="group relative cursor-pointer">
-            <a href="#" className="flex items-center gap-[2px] py-2">
+            <span className="flex items-center gap-[2px] py-2">
               Trending Products
-              <span>
-                <FaCaretDown className="transition-all duration-200 group-hover:rotate-180" />
-              </span>
-            </a>
-            <div className="absolute z-[9999] hidden group-hover:block w-[200px] rounded-md bg-white p-2 text-black shadow-md">
+              <FaCaretDown className="transition-all duration-200 group-hover:rotate-180" />
+            </span>
+            <div className="absolute hidden group-hover:block w-[200px] rounded-md bg-white p-2 text-black shadow-md">
               <ul>
                 {DropdownLinks.map((data) => (
                   <li key={data.id}>
-                    <a
-                      href={data.link}
-                      className="inline-block w-full rounded-md p-2 hover:bg-primary/20 "
+                    <Link
+                      to={data.link}
+                      className="block w-full rounded-md p-2 hover:bg-primary/20"
                     >
                       {data.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -133,6 +105,42 @@ const Navbar = ({ handleloginPopup }) => {
           </li>
         </ul>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden bg-white dark:bg-gray-900 p-4">
+          <ul className="flex flex-col gap-4">
+            {Menu.map((data) => (
+              <li key={data.id}>
+                <Link
+                  to={data.link}
+                  className="block py-2 hover:text-primary"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {data.name}
+                </Link>
+              </li>
+            ))}
+            {/* Dropdown Links */}
+            <li>
+              <p className="font-semibold">Trending Products</p>
+              <ul className="ml-4 mt-2 flex flex-col gap-2">
+                {DropdownLinks.map((data) => (
+                  <li key={data.id}>
+                    <Link
+                      to={data.link}
+                      className="block hover:text-primary"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {data.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

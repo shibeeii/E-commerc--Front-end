@@ -1,35 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
-
-const TestimonialData = [
-  {
-    id: 1,
-    name: "Victor",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque reiciendis inventore iste ratione ex alias quis magni at optio",
-    img: "https://picsum.photos/101/101",
-  },
-  {
-    id: 2,
-    name: "Satya Nadella",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque reiciendis inventore iste ratione ex alias quis magni at optio",
-    img: "https://picsum.photos/102/102",
-  },
-  {
-    id: 3,
-    name: "Virat Kohli",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque reiciendis inventore iste ratione ex alias quis magni at optio",
-    img: "https://picsum.photos/104/104",
-  },
-  {
-    id: 5,
-    name: "Sachin Tendulkar",
-    text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque reiciendis inventore iste ratione ex alias quis magni at optio",
-    img: "https://picsum.photos/103/103",
-  },
-];
+import axios from "axios";
 
 const Testimonials = () => {
-  var settings = {
+  const [testimonials, setTestimonials] = useState([]);
+
+  const settings = {
     dots: true,
     arrows: false,
     infinite: true,
@@ -41,79 +17,75 @@ const Testimonials = () => {
     pauseOnHover: true,
     pauseOnFocus: true,
     responsive: [
-      {
-        breakpoint: 10000,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          infinite: true,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          initialSlide: 2,
-        },
-      },
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
+      { breakpoint: 10000, settings: { slidesToShow: 3, slidesToScroll: 1, infinite: true } },
+      { breakpoint: 1024, settings: { slidesToShow: 2, slidesToScroll: 1, initialSlide: 2 } },
+      { breakpoint: 640, settings: { slidesToShow: 1, slidesToScroll: 1 } },
     ],
   };
+
+  // Fetch testimonials from backend
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_SERVER_URL}/testimonials`);
+        setTestimonials(res.data);
+      } catch (err) {
+        console.error("Error fetching testimonials:", err);
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="py-10 mb-10">
       <div className="container">
-        {/* header section */}
+        {/* Header */}
         <div className="text-center mb-10 max-w-[600px] mx-auto">
-          <p data-aos="fade-up" className="text-sm text-primary">
-            What our customers are saying
-          </p>
-          <h1 data-aos="fade-up" className="text-3xl font-bold">
-            Testimonials
-          </h1>
+          <p data-aos="fade-up" className="text-sm text-primary">What our customers are saying</p>
+          <h1 data-aos="fade-up" className="text-3xl font-bold">Testimonials</h1>
           <p data-aos="fade-up" className="text-xs text-gray-400">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit
-            asperiores modi Sit asperiores modi
+            Real feedback from our happy customers
           </p>
         </div>
 
-        {/* Testimonial cards */}
+        {/* Cards */}
         <div data-aos="zoom-in">
           <Slider {...settings}>
-            {TestimonialData.map((data) => (
-              <div className="my-6">
-                <div
-                  key={data.id}
-                  className="flex flex-col gap-4 shadow-lg py-8 px-6 mx-4 rounded-xl dark:bg-gray-800 bg-primary/10 relative"
-                >
-                  <div className="mb-4">
-                    <img
-                      src={data.img}
-                      alt=""
-                      className="rounded-full w-20 h-20"
-                    />
-                  </div>
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="space-y-3">
-                      <p className="text-xs text-gray-500">{data.text}</p>
-                      <h1 className="text-xl font-bold text-black/80 dark:text-light">
-                        {data.name}
-                      </h1>
+            {testimonials.length > 0 ? (
+              testimonials.map((data) => (
+                <div key={data._id} className="my-6">
+                  <div className="flex flex-col gap-4 shadow-lg py-8 px-6 mx-4 rounded-xl dark:bg-gray-800 bg-primary/10 relative">
+                    {/* Common Cartoon Image */}
+                    <div className="mb-4 flex justify-center">
+                      <img
+                        src={data.img || "https://cdn-icons-png.flaticon.com/512/1995/1995574.png"}
+                        alt="User"
+                        className="rounded-full w-20 h-20 object-cover"
+                      />
                     </div>
+
+                    {/* Name & Text */}
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="space-y-3 text-center">
+                        <p className="text-xs text-gray-500">{data.text}</p>
+                        <h1 className="text-xl font-bold text-black/80 dark:text-light">
+                          {data.name || "Anonymous"}
+                        </h1>
+                      </div>
+                    </div>
+
+                    {/* Quote Mark */}
+                    <p className="text-primary text-9xl font-serif absolute top-0 right-0">
+                      ,,
+                    </p>
                   </div>
-                  <p className="text-primary text-9xl font-serif absolute top-0 right-0">
-                    ,,
-                  </p>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-6">
+                No testimonials yet. Be the first to add one!
+              </p>
+            )}
           </Slider>
         </div>
       </div>

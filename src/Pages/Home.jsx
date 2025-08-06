@@ -5,14 +5,16 @@ import TopProducts from "../components/TopProducts/TopProducts";
 import Banner from "../components/Banner/Banner";
 import Subscribe from "../components/Subscribe/Subscribe";
 import Testimonials from "../components/Testimonials/Testimonials";
+import OfferProductsHome from "./OfferProductsHome";
 
 const Home = ({ handleOrderPopup }) => {
   return (
     <>
       <Hero handleOrderPopup={handleOrderPopup} />
+      <TopProducts/>
       <Products />
-      <TopProducts handleOrderPopup={handleOrderPopup} />
       <Banner />
+      <OfferProductsHome />
       <Subscribe />
       <Testimonials />
     </>
