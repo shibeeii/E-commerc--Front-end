@@ -53,41 +53,43 @@ const Products = () => {
         </div>
 
         {/* Carousel */}
-        <Slider {...settings}>
-          {categories.map((cat) => (
-            <div key={cat.id} className="px-4">
-              <Link to={cat.link}>
-                <div className="relative group my-10 w-[250px] h-[300px] rounded-3xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:rotate-1 hover:scale-[1.05] bg-white/10 backdrop-blur-lg shadow-xl border border-white/20">
-                  {/* Glowing Background Orb */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-40 h-40 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 blur-3xl opacity-70 group-hover:scale-125 transition-transform duration-500"></div>
-                  </div>
+<Slider {...settings}>
+  {categories.map((cat) => (
+    <div key={cat.id} className="px-4 flex justify-center">
+      <Link to={cat.link}>
+        <div className="relative group my-10 w-[250px] h-[300px] rounded-3xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:rotate-1 hover:scale-[1.05] bg-white/10 backdrop-blur-lg shadow-xl border border-white/20">
+          {/* Glowing Background Orb */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 blur-3xl opacity-70 group-hover:scale-125 transition-transform duration-500"></div>
+          </div>
 
-                  {/* Floating PNG Image */}
-                  <div className="relative z-10 h-[200px] flex justify-center items-center animate-[float_3s_ease-in-out_infinite]">
-                    <img
-                      src={cat.img}
-                      alt={cat.title}
-                      className="h-[180px] object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
+          {/* Floating PNG Image */}
+          <div className="relative z-10 h-[200px] flex justify-center items-center animate-[float_3s_ease-in-out_infinite]">
+            <img
+              src={cat.img}
+              alt={cat.title}
+              className="h-[180px] object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] group-hover:scale-110 transition-transform duration-500"
+            />
+          </div>
 
-                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 
-                   bg-white/80 backdrop-blur-md px-6 py-1 rounded-full shadow-md border border-white/30 
-                   text-gray-900 font-semibold text-lg 
-                   group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/50 
-                     transition-all duration-500"
-                  >
-                    {cat.title}
-                  </div>
+          <div
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 
+            bg-white/80 backdrop-blur-md px-6 py-1 rounded-full shadow-md border border-white/30 
+            text-gray-900 font-semibold text-lg 
+            group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/50 
+            transition-all duration-500"
+          >
+            {cat.title}
+          </div>
 
-                  {/* Hover Glow Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-              </Link>
-            </div>
-          ))}
-        </Slider>
+          {/* Hover Glow Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        </div>
+      </Link>
+    </div>
+  ))}
+</Slider>
+
       </div>
     </div>
   );
