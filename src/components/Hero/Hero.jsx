@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 
 const Hero = ({ handleOrderPopup }) => {
@@ -68,12 +69,14 @@ console.log(products);
                     data-aos-duration="500"
                     data-aos-delay="300"
                   >
-                    <button
-                      
-                      className="bg-gradient-to-r from-primary to-secondary hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
-                    >
-                      Get Now
-                    </button>
+                    <Link to={'/offer-products'}>
+                      <button
+                        
+                        className="bg-gradient-to-r from-primary to-secondary hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
+                      >
+                        Get Offers
+                      </button>
+                    </Link>
                   </div>
                 </div>
                 {/* image section */}

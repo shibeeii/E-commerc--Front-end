@@ -22,10 +22,10 @@ const CheckoutPage = () => {
     state: "",
     pincode: "",
   });
-
-  const navigate = useNavigate();
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -79,7 +79,9 @@ const CheckoutPage = () => {
     try {
       if (address._id) {
         await axios.put(
-          `${import.meta.env.VITE_SERVER_URL}/address/edit/${user._id}/${address._id}`,
+          `${import.meta.env.VITE_SERVER_URL}/address/edit/${user._id}/${
+            address._id
+          }`,
           address
         );
         toast.success("Address updated successfully!");
@@ -124,7 +126,9 @@ const CheckoutPage = () => {
   const deleteAddress = async (userId, addressId) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}/address/delete/${userId}/${addressId}`
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/address/delete/${userId}/${addressId}`
       );
       fetchAddresses();
       toast.success("Address deleted successfully");
@@ -208,7 +212,9 @@ const CheckoutPage = () => {
         <div className="w-full lg:w-1/2 space-y-10">
           {/* Saved Addresses */}
           <div className="border p-6 rounded-lg bg-white shadow-sm">
-            <h3 className="text-xl font-bold text-black mb-4">Saved Addresses</h3>
+            <h3 className="text-xl font-bold text-black mb-4">
+              Saved Addresses
+            </h3>
             <div className="space-y-4">
               {addresses.map((addr) => (
                 <label
@@ -226,13 +232,17 @@ const CheckoutPage = () => {
                     onChange={() => {
                       setSelectedAddress(addr);
                       setAddress(addr);
+                      setAddressConfirmed(true);
                     }}
                     className="mt-1 accent-blue-600"
                   />
                   <div className="flex-1 text-sm text-gray-700">
-                    <div className="font-semibold text-black">{addr.fullName}</div>
+                    <div className="font-semibold text-black">
+                      {addr.fullName}
+                    </div>
                     <div>
-                      {addr.addressLine}, {addr.city}, {addr.state} - {addr.pincode}
+                      {addr.addressLine}, {addr.city}, {addr.state} -{" "}
+                      {addr.pincode}
                     </div>
                     <div>📞 {addr.phone}</div>
                   </div>
@@ -263,7 +273,9 @@ const CheckoutPage = () => {
 
           {/* Shipping Form */}
           <div className="border p-6 rounded-lg bg-white shadow-sm">
-            <h3 className="text-xl font-bold mb-4 text-black">Shipping Details</h3>
+            <h3 className="text-xl font-bold mb-4 text-black">
+              Shipping Details
+            </h3>
             <form
               onSubmit={submit}
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
@@ -320,7 +332,9 @@ const CheckoutPage = () => {
                 type="submit"
                 className="col-span-full bg-primary text-white py-2 rounded"
               >
-                {address._id ? "Update Address" : "Save Address"}
+                {addressConfirmed || address._id
+                  ? "Confirm Address"
+                  : "Save Address"}
               </button>
             </form>
           </div>
@@ -331,6 +345,19 @@ const CheckoutPage = () => {
           {cart.length > 0 && (
             <>
               <h3 className="text-xl font-bold text-black">🛒 Order Summary</h3>
+
+              {selectedAddress && (
+                <div className="border border-gray-200 p-4 rounded text-sm bg-gray-50">
+                  <h4 className="font-semibold text-black mb-1">📦 Ship To:</h4>
+                  <p className="text-black">{selectedAddress.fullName}</p>
+                  <p>
+                    {selectedAddress.addressLine}, {selectedAddress.city},{" "}
+                    {selectedAddress.state} - {selectedAddress.pincode}
+                  </p>
+                  <p>📞 {selectedAddress.phone}</p>
+                </div>
+              )}
+
               {cart.map((item) => (
                 <div
                   key={item.productId._id}
@@ -346,13 +373,32 @@ const CheckoutPage = () => {
                       <h4 className="font-medium text-black">
                         {item.productId.productname}
                       </h4>
-                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                      <p className="text-sm text-gray-600">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-between">
-                    <span className="font-bold text-black">
-                      ₹{(item.price * item.quantity).toFixed(2)}
-                    </span>
+                    {(() => {
+                      const originalPrice = item.productId.price;
+                      const offer = item.productId.offer || 0;
+                      const discountedPrice =
+                        originalPrice - (originalPrice * offer) / 100;
+
+                      return (
+                        <div className="text-right">
+                          <div className="text-green-600 font-semibold">
+                            ₹{(discountedPrice * item.quantity).toFixed(2)}
+                          </div>
+                          {offer > 0 && (
+                            <div className="text-xs text-gray-500 line-through">
+                              ₹{(originalPrice * item.quantity).toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+
                     <FaTrashAlt
                       onClick={() => handleRemove(item.productId._id)}
                       className="text-red-500 cursor-pointer mt-2"

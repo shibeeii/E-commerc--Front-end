@@ -17,6 +17,7 @@ import MyOrders from "./Pages/MyOrders";
 import TopProducts from "./components/TopProducts/TopProducts";
 import TopProductsPage from "./TopProductsPage";
 import OfferProducts from "./Pages/OfferProducts";
+import ScrollToTop from "./components/Scrollontop/ScrollonTop";
 
 const App = () => {
   const [loginPopup, setloginPopup] = React.useState(false);
@@ -43,6 +44,8 @@ const App = () => {
   return (
     <div className="bg-white dark:bg-gray-900 dark:text-white duration-200">
       {!hideNavAndFooter && <Navbar handleloginPopup={handleloginPopup} />}
+            <ScrollToTop />
+
 
       <Routes>
         <Route path="/login" element={<Login />} />
