@@ -138,71 +138,81 @@ const CheckoutPage = () => {
     }
   };
 
-  const handlePayment = async () => {
-    if (!selectedAddress) {
-      toast.warn("Please select a shipping address.");
-      return;
-    }
-    try {
-      const { data: order } = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/api/payment/create-order`,
-        { amount: total }
-      );
-      const options = {
-        key: "rzp_test_V2IgvO00CCx2sM",
-        amount: order.amount,
-        currency: order.currency,
-        name: "Q Mart",
-        description: "Order Payment",
-        order_id: order.id,
-        handler: async function (response) {
-          try {
-            const verify = await axios.post(
-              `${import.meta.env.VITE_SERVER_URL}/api/payment/verify`,
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                userId: user._id,
-                amount: total,
-                items: cart.map((item) => ({
-                  productId: item.productId._id,
-                  quantity: item.quantity,
-                  price: item.price,
-                })),
-                shippingAddress: selectedAddress,
-              }
-            );
-            if (verify.data.success) {
-              toast.success("✅ Payment successful & order placed!");
-              await axios.delete(
-                `${import.meta.env.VITE_SERVER_URL}/cart/clear/${user._id}`
-              );
-              setCart([]);
-              setTotal(0);
-              setTimeout(() => navigate("/my-orders"), 1000);
-            } else {
-              toast.error("Payment verification failed.");
+const handlePayment = async () => {
+  if (!selectedAddress) {
+    toast.warn("Please select a shipping address.");
+    return;
+  }
+
+  try {
+    const { data: order } = await axios.post(
+      `${import.meta.env.VITE_SERVER_URL}/api/payment/create-order`,
+      { amount: total }
+    );
+
+    const options = {
+      key: "rzp_test_V2IgvO00CCx2sM",
+      amount: order.amount,
+      currency: order.currency,
+      name: "Q Mart",
+      description: "Order Payment",
+      order_id: order.id,
+      handler: async function (response) {
+        try {
+          const verify = await axios.post(
+            `${import.meta.env.VITE_SERVER_URL}/api/payment/verify`,
+            {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              userId: user._id,
+              amount: total,
+              items: cart.map((item) => ({
+                productId: item.productId._id,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+              shippingAddress: selectedAddress,
             }
-          } catch (err) {
-            console.error("Error verifying payment:", err);
-            toast.error("Something went wrong during payment verification.");
+          );
+
+          if (verify.data.success) {
+            toast.success("Payment successful & order placed!");
+
+            setTimeout(() => navigate("/my-orders"), 1500);
+
+            // Clear cart in background
+            axios
+              .delete(`${import.meta.env.VITE_SERVER_URL}/cart/clear/${user._id}`)
+              .then(() => {
+                setCart([]);
+                setTotal(0);
+              })
+              .catch((err) => console.error("🛒 Error clearing cart:", err));
+          } else {
+            toast.error("Payment verification failed.");
           }
-        },
-        prefill: {
-          name: selectedAddress.fullName,
-          email: user?.email,
-          contact: selectedAddress.phone,
-        },
-        theme: { color: "#0e7490" },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Payment initiation failed:", error);
-      toast.error("Payment initiation failed. Try again.");
-    }
-  };
+        } catch (err) {
+          console.error("Verification Error:", err);
+          toast.error("Something went wrong during payment verification.");
+        }
+      },
+      prefill: {
+        name: selectedAddress.fullName,
+        email: user?.email,
+        contact: selectedAddress.phone,
+      },
+      theme: { color: "#0e7490" },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (error) {
+    console.error("Order Creation Error:", error);
+    toast.error(" Payment initiation failed. Try again.");
+  }
+};
+
 
   return (
     <>

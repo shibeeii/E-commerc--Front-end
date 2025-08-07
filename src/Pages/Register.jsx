@@ -135,8 +135,9 @@ const Register = () => {
                     localStorage.setItem("user", JSON.stringify(user));
 
                     toast.success("Logged in with Google!");
-                    navigate("/");
+                    setTimeout(() => navigate("/"), 1000);
                   } catch (error) {
+                    console.error("Google login failed:", error);
                     toast.error("Google login failed");
                   }
                 }}

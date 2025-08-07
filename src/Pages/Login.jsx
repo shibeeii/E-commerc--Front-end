@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import {GoogleLogin} from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -128,8 +128,9 @@ const Login = () => {
                     localStorage.setItem("user", JSON.stringify(user));
 
                     toast.success("Logged in with Google!");
-                    navigate("/");
+                    setTimeout(() => navigate("/"), 1000); 
                   } catch (error) {
+                    console.error("Google login error:", error);
                     toast.error("Google login failed");
                   }
                 }}
