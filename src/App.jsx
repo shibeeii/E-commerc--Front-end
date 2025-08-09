@@ -14,10 +14,12 @@ import Register from "./Pages/Register";
 import CheckoutPage from "./Pages/CheckoutPage";
 import Wishlist from "./Pages/Wishlist";
 import MyOrders from "./Pages/MyOrders";
-import TopProducts from "./components/TopProducts/TopProducts";
 import TopProductsPage from "./TopProductsPage";
 import OfferProducts from "./Pages/OfferProducts";
 import ScrollToTop from "./components/Scrollontop/ScrollonTop";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const App = () => {
   const [loginPopup, setloginPopup] = React.useState(false);
@@ -73,6 +75,8 @@ const App = () => {
 
       {!hideNavAndFooter && !hideOnlyFoot && <Footer />}
       <Popup loginPopup={loginPopup} setloginPopup={setloginPopup} />
+          <ToastContainer position="top-center" autoClose={3000} />
+
     </div>
   );
 };

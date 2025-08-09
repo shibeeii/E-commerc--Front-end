@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import footerLogo from "../../assets/logo.png";
 import Banner from "../../assets/website/footter-pattern.jpg";
 import {
@@ -21,32 +22,48 @@ const BannerImg = {
 };
 
 const FooterLinks = [
-  { title: "Home", link: "/#" },
-  { title: "About", link: "/#about" },
-  { title: "Contact", link: "/#contact" },
-  { title: "Blog", link: "/#blog" },
+  { title: "Home", link: "/" },
+  { title: "About", link: "/about" },
+  { title: "Contact", link: "/contact" },
+  { title: "Blog", link: "/blog" },
 ];
 
 const Footer = () => {
   const [name, setName] = useState("");
   const [testimonial, setTestimonial] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!testimonial.trim()) {
       toast.warn("Please write your testimonial.");
       return;
     }
+
+    // Check submission limit
+    let submissionCount = parseInt(localStorage.getItem("testimonialCount") || "0");
+    if (submissionCount >= 2) {
+      toast.error("You can only submit 2 testimonials.");
+      return;
+    }
+
     try {
+      setLoading(true);
       await axios.post(`${import.meta.env.VITE_SERVER_URL}/testimonials`, {
         name: name.trim() || "Anonymous",
-        text: testimonial,
+        text: testimonial.trim(),
       });
+
+      submissionCount += 1;
+      localStorage.setItem("testimonialCount", submissionCount.toString());
+
       toast.success("Thanks for your feedback!");
       setName("");
       setTestimonial("");
     } catch (err) {
       console.error("Error adding testimonial:", err);
       toast.error("Failed to submit testimonial.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,13 +81,13 @@ const Footer = () => {
               Innovating shopping experiences one product at a time.
             </p>
             <div className="flex items-center gap-4 mt-4">
-              <a href="#">
+              <a href="#" className="hover:scale-110 transition-transform">
                 <FaInstagram className="text-2xl hover:text-primary transition" />
               </a>
-              <a href="#">
+              <a href="#" className="hover:scale-110 transition-transform">
                 <FaFacebook className="text-2xl hover:text-primary transition" />
               </a>
-              <a href="#">
+              <a href="#" className="hover:scale-110 transition-transform">
                 <FaLinkedin className="text-2xl hover:text-primary transition" />
               </a>
             </div>
@@ -81,11 +98,13 @@ const Footer = () => {
             <h2 className="text-lg font-semibold mb-3">Quick Links</h2>
             <ul className="space-y-2">
               {FooterLinks.map((link) => (
-                <li
-                  key={link.title}
-                  className="text-gray-300 hover:text-primary cursor-pointer transition"
-                >
-                  {link.title}
+                <li key={link.title}>
+                  <Link
+                    to={link.link}
+                    className="text-gray-300 hover:text-primary transition"
+                  >
+                    {link.title}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -118,18 +137,21 @@ const Footer = () => {
                 placeholder="Your name (optional)"
                 className="p-2 rounded text-black"
               />
-              <input
-                type="text"
+              <textarea
+                rows="3"
                 value={testimonial}
                 onChange={(e) => setTestimonial(e.target.value)}
                 placeholder="Write your feedback..."
-                className="p-2 rounded text-black"
+                className="p-2 rounded text-black resize-none"
               />
               <button
                 onClick={handleSubmit}
-                className="bg-primary hover:bg-teal-700 text-white px-4 py-2 rounded"
+                disabled={loading}
+                className={`bg-primary hover:bg-teal-700 text-white px-4 py-2 rounded ${
+                  loading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
               >
-                Submit
+                {loading ? "Submitting..." : "Submit"}
               </button>
             </div>
           </div>

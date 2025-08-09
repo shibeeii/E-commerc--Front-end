@@ -44,10 +44,7 @@ const MyOrders = () => {
           },
         }
       );
-
-      // Remove from UI instantly
       setOrders((prev) => prev.filter((order) => order._id !== orderId));
-
       toast.success("✅ Order deleted successfully!");
     } catch (err) {
       console.error("Error deleting order", err);
@@ -55,13 +52,9 @@ const MyOrders = () => {
     }
   };
 
-  // Download Invoice
   const handleDownloadInvoice = (order) => {
     const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.text("Invoice", 14, 20);
-
+    doc.setFontSize(18).text("Invoice", 14, 20);
     doc.setFontSize(12);
     doc.text(`Order ID: ${order._id}`, 14, 30);
     doc.text(
@@ -69,7 +62,6 @@ const MyOrders = () => {
       14,
       38
     );
-
     doc.text("Shipping Information:", 14, 50);
     doc.text(`Name: ${order.shippingAddress?.fullName || "N/A"}`, 14, 58);
     doc.text(
@@ -80,8 +72,6 @@ const MyOrders = () => {
       66
     );
     doc.text(`Phone: ${order.shippingAddress?.phone || "N/A"}`, 14, 74);
-
-    // Products section
     doc.text("Products:", 14, 90);
     let y = 98;
     order.items.forEach((item, idx) => {
@@ -94,143 +84,127 @@ const MyOrders = () => {
       doc.text(`Price: ${item.price}`, 160, y);
       y += 8;
     });
-
     doc.text(`Total Amount: ${order.amount ?? "0.00"}`, 14, y + 10);
-
     doc.save(`invoice_${order._id}.pdf`);
     toast.info("📄 Invoice downloaded!");
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Toast Container */}
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      {/* Page Title */}
-      <h1 className="text-3xl font-bold mb-2">My Orders</h1>
-      <p className="text-gray-500 mb-6">View and manage your order history</p>
+    <div className="container mx-auto px-4 py-6">
+      <ToastContainer position="top-center" autoClose={3000} />
+      <h1 className="text-2xl font-bold mb-2">My Orders</h1>
+      <p className="text-gray-500 mb-5">View and manage your order history</p>
 
       {orders.length === 0 ? (
         <p>No orders found.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-4">
           {orders.map((order) => (
             <div
               key={order._id}
-              className="border rounded-xl shadow-lg p-6 bg-white transition-transform duration-300 hover:scale-[1.01] hover:shadow-xl"
+              className="w-full border rounded-lg shadow-md p-4 bg-white hover:shadow-lg transition-all"
             >
-              {/* Order Header */}
-              <div className="flex flex-wrap justify-between items-center mb-4">
-                <p className="font-medium">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-3">
+                <p className="font-medium text-sm">
                   <span className="text-gray-600">Order #</span> {order._id}
                 </p>
-                <p className="text-gray-500 text-sm">
-                  Placed on{" "}
+                <p className="text-gray-500 text-xs">
                   {order.createdAt
                     ? new Date(order.createdAt).toLocaleDateString("en-IN", {
                         year: "numeric",
-                        month: "long",
+                        month: "short",
                         day: "numeric",
                       })
-                    : "Unknown date"}
+                    : "Unknown"}
                 </p>
               </div>
 
               {/* Status */}
-              <div className="flex gap-3 mb-6">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                    order.status === "Delivered"
-                      ? "bg-green-100 text-green-600"
-                      : order.status === "Cancelled"
-                      ? "bg-red-100 text-red-600"
-                      : "bg-yellow-100 text-yellow-600"
-                  }`}
-                >
-                  {order.status || "Pending"}
-                </span>
-              </div>
+            {/* Status & Payment Mode */}
+<div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+  <span
+    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+      order.status === "Delivered"
+        ? "bg-green-100 text-green-600"
+        : order.status === "Cancelled"
+        ? "bg-red-100 text-red-600"
+        : "bg-yellow-100 text-yellow-600"
+    }`}
+  >
+    {order.status || "Pending"}
+  </span>
+  <span className="text-xs text-gray-500">
+    Payment Mode: <span className="font-medium text-gray-700">{order.paymentMode || "N/A"}</span>
+  </span>
+</div>
 
-              {/* Product List */}
-              <div className="border-t border-b py-4 mb-6">
-                {Array.isArray(order.items) &&
-                  order.items.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-4 mb-4 last:mb-0"
-                    >
-                      <img
-                        src={item.productId?.image || ""}
-                        alt={item.productId?.productname || "Product"}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h2 className="font-semibold text-gray-800">
-                          {item.productId?.productname || "Unnamed product"}
-                        </h2>
-                        <p className="text-sm text-gray-500">
-                          Quantity: {item.quantity ?? 0}
-                        </p>
-                      </div>
-                      <p className="font-medium">₹{item.price ?? "0.00"}</p>
+              
+
+              {/* Products */}
+              <div className="border-t border-b py-3 mb-3">
+                {order.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 mb-3 last:mb-0"
+                  >
+                    <img
+                      src={item.productId?.image || ""}
+                      alt={item.productId?.productname || "Product"}
+                      className="w-14 h-14 object-cover rounded"
+                    />
+                    <div className="flex-1">
+                      <h2 className="font-medium text-gray-800 text-sm">
+                        {item.productId?.productname || "Unnamed product"}
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Qty: {item.quantity ?? 0}
+                      </p>
                     </div>
-                  ))}
+                    <p className="font-medium text-sm">
+                      ₹{item.price ?? "0.00"}
+                    </p>
+                  </div>
+                ))}
               </div>
 
-              {/* Shipping Info */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  Shipping Information
+              {/* Shipping */}
+              <div className="mb-3">
+                <h3 className="font-medium text-gray-800 mb-1 text-sm">
+                  Shipping Info
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   {order.shippingAddress?.fullName || "N/A"}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   {order.shippingAddress?.addressLine || ""},{" "}
                   {order.shippingAddress?.city || ""},{" "}
                   {order.shippingAddress?.state || ""}
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   Phone: {order.shippingAddress?.phone || "N/A"}
                 </p>
               </div>
 
-              {/* Order Summary */}
-              <div className="mt-4">
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  Order Summary
-                </h3>
-                <div className="text-gray-600 space-y-1">
-                  <div className="flex justify-between font-semibold border-t pt-2 text-gray-900">
-                    <span>Total</span>
-                    <span>₹{order.amount ?? "0.00"}</span>
-                  </div>
-                </div>
+              {/* Total */}
+              <div className="flex justify-between font-semibold text-gray-900 border-t pt-2 text-sm">
+                <span>Total</span>
+                <span>₹{order.amount ?? "0.00"}</span>
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => handleDeleteOrder(order._id)}
-                  className="flex items-center justify-center gap-2 px-5 py-2 rounded-lg bg-red-700 text-white hover:bg-red-800 transition-colors"
+                  className="flex-1 px-3 py-1.5 rounded bg-red-700 text-white hover:bg-red-800 text-xs"
                 >
-                  Delete Order
+                  Delete
                 </button>
-
                 <button
                   onClick={() => handleDownloadInvoice(order)}
-                  className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="flex-1 px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 text-xs"
                 >
-                  Download Invoice
+                  Invoice
                 </button>
               </div>
             </div>
