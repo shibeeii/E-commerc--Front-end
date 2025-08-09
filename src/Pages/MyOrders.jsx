@@ -289,21 +289,21 @@ const MyOrders = () => {
                   Delete
                 </button>
 
-                {order.status === "Delivered" && (
-                  <button
-                    onClick={() => handleReturnOrder(order._id)}
-                    className="px-2 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white text-md"
-                  >
-                    Return
-                  </button>
-                )}
-
                 <button
                   onClick={() => handleDownloadInvoice(order)}
                   className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-md"
                 >
                   Invoice
                 </button>
+
+                {order.status === "Delivered" && (
+                  <button
+                    onClick={() => handleReturnOrder(order._id)}
+                    className="px-2 py-1 rounded bg-yellow-600 hover:bg-yellow-700 text-white text-md"
+                  >
+                    Return Order
+                  </button>
+                )}
               </div>
             </div>
           ))}
