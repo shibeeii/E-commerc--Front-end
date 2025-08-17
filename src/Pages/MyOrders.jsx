@@ -38,14 +38,11 @@ const MyOrders = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}/orders/${orderId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-          },
-        }
-      );
+      await axios.delete(`${import.meta.env.VITE_SERVER_URL}/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+        },
+      });
       setOrders((prev) => prev.filter((order) => order._id !== orderId));
       toast.success("✅ Order deleted successfully!");
     } catch (err) {
@@ -247,6 +244,8 @@ const MyOrders = () => {
                       ? "bg-green-100 text-green-600"
                       : order.status === "Cancelled"
                       ? "bg-red-100 text-red-600"
+                      : order.status === "Returned"
+                      ? "bg-red-200 text-red-700"
                       : "bg-yellow-100 text-yellow-600"
                   }`}
                 >
@@ -262,9 +261,9 @@ const MyOrders = () => {
 
               {/* Products (brief) */}
               <div className="border-t border-b py-3 mb-3">
-                {order.items.map((item, idx) => (
+                {order.items.map((item) => (
                   <div
-                    key={idx}
+                    key={item._id}
                     className="flex items-center gap-3 mb-3 last:mb-0"
                   >
                     <img
@@ -281,6 +280,15 @@ const MyOrders = () => {
                       </p>
                     </div>
                     <p className="font-medium text-sm">₹{item.price ?? "0.00"}</p>
+
+                    {/* Show Returned label only in order card */}
+                    {item.status === "Returned" && (
+                      <div>
+                        <span className="text-red-600 font-semibold px-3 py-1 rounded">
+                          Returned
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -374,55 +382,60 @@ const MyOrders = () => {
             </p>
 
             <div>
-{selectedOrder.items.map((item) => (
-  <div
-    key={item._id} // Use unique id, NOT index
-    className="flex items-center justify-between border-b py-3"
-  >
-    <div className="flex items-center gap-4">
-      <img
-        src={item.productId?.image || ""}
-        alt={item.productId?.productname || "Product"}
-        className="w-16 h-16 object-cover rounded"
-      />
-      <div>
-        <p className="font-semibold">{item.productId?.productname}</p>
-        <p>Quantity: {item.quantity}</p>
-        <p>Price: ₹{item.price.toFixed(2)}</p>
-        <p>Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
-        <p>
-          Status:{" "}
-          <span
-            className={`font-semibold ${
-              item.status === "Returned"
-                ? "text-red-600"
-                : item.status === "Delivered"
-                ? "text-green-600"
-                : "text-gray-600"
-            }`}
-          >
-            {item.status || "Pending"}
-          </span>
-        </p>
-      </div>
-    </div>
-    <div>
-      {selectedOrder.status === "Delivered" && item.status !== "Returned" ? (
-        <button
-          onClick={() => handleReturnProduct(selectedOrder._id, item._id)}
-          className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
-        >
-          Return Product
-        </button>
-      ) : (
-        <span className="text-red-600 font-semibold px-3 py-1 rounded">
-          Returned
-        </span>
-      )}
-    </div>
-  </div>
-))}
-
+              {selectedOrder.items.map((item) => (
+                <div
+                  key={item._id}
+                  className="flex items-center justify-between border-b py-3"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={item.productId?.image || ""}
+                      alt={item.productId?.productname || "Product"}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <div>
+                      <p className="font-semibold">{item.productId?.productname}</p>
+                      <p>Quantity: {item.quantity}</p>
+                      <p>Price: ₹{item.price.toFixed(2)}</p>
+                      <p>Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
+                      <p>
+                        Status:{" "}
+                        <span
+                          className={`font-semibold ${
+                            item.status === "Returned"
+                              ? "text-red-600"
+                              : item.status === "Delivered"
+                              ? "text-green-600"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {item.status || "Pending"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    {item.status === "Returned" ? (
+                      <span className="text-red-600 font-semibold px-3 py-1 rounded">
+                        Returned
+                      </span>
+                    ) : selectedOrder.status === "Delivered" ? (
+                      <button
+                        onClick={() =>
+                          handleReturnProduct(selectedOrder._id, item._id)
+                        }
+                        className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
+                      >
+                        Return Product
+                      </button>
+                    ) : (
+                      <span className="text-gray-500 font-semibold px-3 py-1 rounded">
+                        —
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="mt-6 flex justify-end">

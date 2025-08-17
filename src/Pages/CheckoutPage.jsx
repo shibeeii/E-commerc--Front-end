@@ -146,6 +146,7 @@ const CheckoutPage = () => {
     }
 
     try {
+      // 🔹 Step 1: Create Razorpay Order
       const { data: order } = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/payment/create-order`,
         { amount: total }
@@ -160,6 +161,7 @@ const CheckoutPage = () => {
         order_id: order.id,
         handler: async function (response) {
           try {
+            // In handlePayment verify
             const verify = await axios.post(
               `${import.meta.env.VITE_SERVER_URL}/api/payment/verify`,
               {
@@ -174,15 +176,18 @@ const CheckoutPage = () => {
                   price: item.price,
                 })),
                 shippingAddress: selectedAddress,
+                paymentMode: "UPI", // 👈 Add this
               }
             );
 
             if (verify.data.success) {
-              toast.success("Payment successful & order placed!");
+              toast.success(
+                verify.data.message || "Payment successful & order placed!"
+              );
 
               setTimeout(() => navigate("/my-orders"), 1500);
 
-              // Clear cart in background
+              // 🔹 Step 3: Clear Cart (non-blocking)
               axios
                 .delete(
                   `${import.meta.env.VITE_SERVER_URL}/cart/clear/${user._id}`
@@ -193,11 +198,18 @@ const CheckoutPage = () => {
                 })
                 .catch((err) => console.error("🛒 Error clearing cart:", err));
             } else {
-              toast.error("Payment verification failed.");
+              toast.error(
+                verify.data.message || "Payment verification failed."
+              );
             }
           } catch (err) {
-            console.error("Verification Error:", err);
-            toast.error("Something went wrong during payment verification.");
+            console.error(
+              "❌ Verification Error:",
+              err.response?.data || err.message
+            );
+            toast.error(
+              err.response?.data?.message || "Payment verification failed."
+            );
           }
         },
         prefill: {
@@ -211,49 +223,55 @@ const CheckoutPage = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
-      console.error("Order Creation Error:", error);
-      toast.error(" Payment initiation failed. Try again.");
+      console.error(
+        "❌ Order Creation Error:",
+        error.response?.data || error.message
+      );
+      toast.error(
+        error.response?.data?.message || "Payment initiation failed. Try again."
+      );
     }
   };
-const handleCOD = async () => {
-  if (!selectedAddress) {
-    toast.warn("Please select a shipping address.");
-    return;
-  }
 
-  try {
-    const { data } = await axios.post(
-      `${import.meta.env.VITE_SERVER_URL}/api/payment/cod`,
-      {
-        userId: user._id,
-        amount: total,
-        items: cart.map((item) => ({
-          productId: item.productId._id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        shippingAddress: selectedAddress,
-      }
-    );
-
-    if (data.success) {
-      toast.success("COD order placed successfully!");
-
-      setTimeout(() => navigate("/my-orders"), 1500);
-
-      await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}/cart/clear/${user._id}`
-      );
-      setCart([]);
-      setTotal(0);
+  const handleCOD = async () => {
+    if (!selectedAddress) {
+      toast.warn("Please select a shipping address.");
+      return;
     }
-  } catch (err) {
-    console.error("COD Order Error:", err);
-    toast.error("Failed to place COD order.");
-  }
-};
 
+    try {
+      // In handleCOD
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_SERVER_URL}/api/payment/cod`,
+        {
+          userId: user._id,
+          amount: total,
+          items: cart.map((item) => ({
+            productId: item.productId._id,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          shippingAddress: selectedAddress,
+          paymentMode: "Cash on Delivery", // 👈 Add this
+        }
+      );
 
+      if (data.success) {
+        toast.success("COD order placed successfully!");
+
+        setTimeout(() => navigate("/my-orders"), 1500);
+
+        await axios.delete(
+          `${import.meta.env.VITE_SERVER_URL}/cart/clear/${user._id}`
+        );
+        setCart([]);
+        setTotal(0);
+      }
+    } catch (err) {
+      console.error("COD Order Error:", err);
+      toast.error("Failed to place COD order.");
+    }
+  };
 
   return (
     <>
@@ -491,18 +509,18 @@ const handleCOD = async () => {
             </label>
           </div>
 
-         <button
-  onClick={() => {
-    if (paymentMethod === "online") {
-      handlePayment();
-    } else {
-      handleCOD();
-    }
-  }}
-  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-3 rounded-lg font-semibold shadow"
->
-  {paymentMethod === "online" ? "Confirm & Pay" : "Place Order (COD)"}
-</button>
+          <button
+            onClick={() => {
+              if (paymentMethod === "online") {
+                handlePayment();
+              } else {
+                handleCOD();
+              }
+            }}
+            className="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-3 rounded-lg font-semibold shadow"
+          >
+            {paymentMethod === "online" ? "Confirm & Pay" : "Place Order (COD)"}
+          </button>
 
           <div className="flex justify-center flex-wrap gap-3 mt-4">
             <img src={img1} alt="Visa" className="h-6" />
