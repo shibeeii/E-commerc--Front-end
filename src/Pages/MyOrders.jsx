@@ -53,11 +53,9 @@ const MyOrders = () => {
 
   const handleDownloadInvoice = (order) => {
     const doc = new jsPDF();
-
     doc.setFontSize(22);
     doc.setTextColor("#003366");
     doc.text("Q-Mart", 14, 20);
-
     doc.setLineWidth(0.5);
     doc.setDrawColor("#003366");
     doc.line(14, 24, 196, 24);
@@ -133,32 +131,6 @@ const MyOrders = () => {
     toast.info("📄 Invoice downloaded!");
   };
 
-  const handleReturnOrder = async (orderId) => {
-    const confirmReturn = window.confirm(
-      "Are you sure you want to return this order?"
-    );
-    if (!confirmReturn) return;
-
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_SERVER_URL}/orders/return/${orderId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-          },
-        }
-      );
-      toast.success("✅ Order returned successfully!");
-      setOrders((prev) =>
-        prev.map((o) => (o._id === orderId ? { ...o, status: "Returned" } : o))
-      );
-    } catch (err) {
-      console.error("Error returning order:", err);
-      toast.error("❌ Failed to return order.");
-    }
-  };
-
   const handleReturnProduct = async (orderId, itemId) => {
     const confirmReturn = window.confirm(
       "Are you sure you want to return this product?"
@@ -178,7 +150,7 @@ const MyOrders = () => {
 
       toast.success("✅ Product return requested successfully!");
 
-      // Update orders state to mark the returned item status as "Returned"
+      // Update orders state
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
           if (order._id === orderId) {
@@ -191,7 +163,7 @@ const MyOrders = () => {
         })
       );
 
-      // Also update selectedOrder if modal is open to reflect UI changes immediately
+      // Update modal order if open
       setSelectedOrder((prev) => {
         if (!prev) return prev;
         const updatedItems = prev.items.map((item) =>
@@ -236,16 +208,16 @@ const MyOrders = () => {
                 </p>
               </div>
 
-              {/* Status & Payment Mode */}
-              <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              {/* Status */}
+              <div className="mb-3 flex justify-between items-center">
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     order.status === "Delivered"
                       ? "bg-green-100 text-green-600"
-                      : order.status === "Cancelled"
-                      ? "bg-red-100 text-red-600"
                       : order.status === "Returned"
                       ? "bg-red-200 text-red-700"
+                      : order.status === "Cancelled"
+                      ? "bg-red-100 text-red-600"
                       : "bg-yellow-100 text-yellow-600"
                   }`}
                 >
@@ -276,45 +248,23 @@ const MyOrders = () => {
                         {item.productId?.productname || "Unnamed product"}
                       </h2>
                       <p className="text-xs text-gray-500">
-                        Qty: {item.quantity ?? 0}
+                        Qty: {item.quantity}
                       </p>
                     </div>
-                    <p className="font-medium text-sm">₹{item.price ?? "0.00"}</p>
-
-                    {/* Show Returned label only in order card */}
+                    <p className="font-medium text-sm">₹{item.price}</p>
                     {item.status === "Returned" && (
-                      <div>
-                        <span className="text-red-600 font-semibold px-3 py-1 rounded">
-                          Returned
-                        </span>
-                      </div>
+                      <span className="text-red-600 font-semibold px-2 py-1">
+                        Returned
+                      </span>
                     )}
                   </div>
                 ))}
               </div>
 
-              {/* Shipping */}
-              <div className="mb-3">
-                <h3 className="font-medium text-gray-800 mb-1 text-sm">
-                  Shipping Info
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  {order.shippingAddress?.fullName || "N/A"}
-                </p>
-                <p className="text-gray-600 text-sm">
-                  {order.shippingAddress?.addressLine || ""},{" "}
-                  {order.shippingAddress?.city || ""},{" "}
-                  {order.shippingAddress?.state || ""}
-                </p>
-                <p className="text-gray-600 text-sm">
-                  Phone: {order.shippingAddress?.phone || "N/A"}
-                </p>
-              </div>
-
               {/* Total */}
-              <div className="flex justify-between font-semibold text-gray-900 border-t pt-2 text-sm">
+              <div className="flex justify-between font-semibold border-t pt-2 text-sm">
                 <span>Total</span>
-                <span>₹{order.amount ?? "0.00"}</span>
+                <span>₹{order.amount}</span>
               </div>
 
               {/* Buttons */}
@@ -322,7 +272,7 @@ const MyOrders = () => {
                 <button
                   onClick={() => handleDeleteOrder(order._id)}
                   disabled={order.status === "Delivered"}
-                  className={`px-2 py-1 rounded text-white text-md ${
+                  className={`px-2 py-1 rounded text-white ${
                     order.status === "Delivered"
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-red-700 hover:bg-red-800"
@@ -333,36 +283,38 @@ const MyOrders = () => {
 
                 <button
                   onClick={() => handleDownloadInvoice(order)}
-                  className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-md"
+                  className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
                   Invoice
                 </button>
 
                 <button
                   onClick={() => {
-                    setSelectedOrder(order);
+                    // Only show returnable products in modal if delivered
+                    if (order.status === "Delivered") {
+                      const filtered = {
+                        ...order,
+                        items: order.items.filter(
+                          (i) => i.status !== "Returned"
+                        ),
+                      };
+                      setSelectedOrder(filtered);
+                    } else {
+                      setSelectedOrder(order);
+                    }
                     setShowModal(true);
                   }}
-                  className="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-md"
+                  className="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   View
                 </button>
-
-                {order.status === "Delivered" && (
-                  <button
-                    onClick={() => handleReturnOrder(order._id)}
-                    className="px-2 py-1 rounded bg-yellow-600 hover:bg-yellow-700 text-white text-md"
-                  >
-                    Return Order
-                  </button>
-                )}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal for order details */}
+      {/* Modal */}
       {showModal && selectedOrder && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
@@ -373,16 +325,10 @@ const MyOrders = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-4">Order Details</h2>
-            <p className="mb-2">
-              <strong>Order ID:</strong> {selectedOrder._id}
-            </p>
-            <p className="mb-4">
-              <strong>Order Date:</strong>{" "}
-              {new Date(selectedOrder.createdAt).toLocaleDateString("en-IN")}
-            </p>
-
-            <div>
-              {selectedOrder.items.map((item) => (
+            {selectedOrder.items.length === 0 ? (
+              <p>No returnable products available.</p>
+            ) : (
+              selectedOrder.items.map((item) => (
                 <div
                   key={item._id}
                   className="flex items-center justify-between border-b py-3"
@@ -394,54 +340,32 @@ const MyOrders = () => {
                       className="w-16 h-16 object-cover rounded"
                     />
                     <div>
-                      <p className="font-semibold">{item.productId?.productname}</p>
-                      <p>Quantity: {item.quantity}</p>
-                      <p>Price: ₹{item.price.toFixed(2)}</p>
-                      <p>Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
-                      <p>
-                        Status:{" "}
-                        <span
-                          className={`font-semibold ${
-                            item.status === "Returned"
-                              ? "text-red-600"
-                              : item.status === "Delivered"
-                              ? "text-green-600"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {item.status || "Pending"}
-                        </span>
+                      <p className="font-semibold">
+                        {item.productId?.productname}
                       </p>
+                      <p>Qty: {item.quantity}</p>
+                      <p>₹{item.price}</p>
+                      <p>Status: {item.status}</p>
                     </div>
                   </div>
-                  <div>
-                    {item.status === "Returned" ? (
-                      <span className="text-red-600 font-semibold px-3 py-1 rounded">
-                        Returned
-                      </span>
-                    ) : selectedOrder.status === "Delivered" ? (
+                  {item.status !== "Returned" &&
+                    selectedOrder.status === "Delivered" && (
                       <button
                         onClick={() =>
                           handleReturnProduct(selectedOrder._id, item._id)
                         }
                         className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
                       >
-                        Return Product
+                        Return
                       </button>
-                    ) : (
-                      <span className="text-gray-500 font-semibold px-3 py-1 rounded">
-                        —
-                      </span>
                     )}
-                  </div>
                 </div>
-              ))}
-            </div>
-
+              ))
+            )}
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className="px-4 py-2 bg-gray-600 text-white rounded"
               >
                 Close
               </button>
