@@ -278,7 +278,7 @@ const MyOrders = () => {
                       : "bg-red-700 hover:bg-red-800"
                   }`}
                 >
-                  Delete
+                  Cancel
                 </button>
 
                 <button
