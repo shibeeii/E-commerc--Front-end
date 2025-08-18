@@ -204,7 +204,7 @@ const CheckoutPage = () => {
             }
           } catch (err) {
             console.error(
-              "❌ Verification Error:",
+              " Verification Error:",
               err.response?.data || err.message
             );
             toast.error(
@@ -224,7 +224,7 @@ const CheckoutPage = () => {
       rzp.open();
     } catch (error) {
       console.error(
-        "❌ Order Creation Error:",
+        " Order Creation Error:",
         error.response?.data || error.message
       );
       toast.error(

@@ -23,7 +23,7 @@ const MyOrders = () => {
       setOrders(res.data);
     } catch (err) {
       console.error("Error fetching user orders", err);
-      toast.error("❌ Failed to load orders.");
+      toast.error(" Failed to load orders.");
     }
   };
 
@@ -33,7 +33,7 @@ const MyOrders = () => {
 
   const handleDeleteOrder = async (orderId) => {
     const confirmDelete = window.confirm(
-      "❓ Are you sure you want to delete this order?"
+      " Are you sure you want to delete this order?"
     );
     if (!confirmDelete) return;
 
@@ -44,10 +44,10 @@ const MyOrders = () => {
         },
       });
       setOrders((prev) => prev.filter((order) => order._id !== orderId));
-      toast.success("✅ Order deleted successfully!");
+      toast.success(" Order deleted successfully!");
     } catch (err) {
       console.error("Error deleting order", err);
-      toast.error("❌ Failed to delete order.");
+      toast.error(" Failed to delete order.");
     }
   };
 
@@ -148,7 +148,7 @@ const MyOrders = () => {
         }
       );
 
-      toast.success("✅ Product return requested successfully!");
+      toast.success(" Product return requested successfully!");
 
       // Update orders state
       setOrders((prevOrders) =>
@@ -173,7 +173,7 @@ const MyOrders = () => {
       });
     } catch (error) {
       console.error("Error returning product:", error);
-      toast.error("❌ Failed to return product.");
+      toast.error(" Failed to return product.");
     }
   };
 
