@@ -8,6 +8,8 @@ const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [returnItem, setReturnItem] = useState(null);
+  const [reason, setReason] = useState("");
   const userId = JSON.parse(localStorage.getItem("user"))?._id;
 
   const fetchUserOrders = async () => {
@@ -131,16 +133,16 @@ const MyOrders = () => {
     toast.info("📄 Invoice downloaded!");
   };
 
-  const handleReturnProduct = async (orderId, itemId) => {
-    const confirmReturn = window.confirm(
-      "Are you sure you want to return this product?"
-    );
-    if (!confirmReturn) return;
+  const handleReturnProduct = async (orderId, itemId, reason) => {
+    if (!reason) {
+      toast.error("Please select a reason for return.");
+      return;
+    }
 
     try {
-      await axios.put(
+      const res = await axios.put(
         `${import.meta.env.VITE_SERVER_URL}/orders/${orderId}/items/${itemId}/return`,
-        {},
+        { reason },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("userToken")}`,
@@ -148,29 +150,19 @@ const MyOrders = () => {
         }
       );
 
+      const updatedOrder = res.data.order;
       toast.success(" Product return requested successfully!");
 
       // Update orders state
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          if (order._id === orderId) {
-            const updatedItems = order.items.map((item) =>
-              item._id === itemId ? { ...item, status: "Returned" } : item
-            );
-            return { ...order, items: updatedItems };
-          }
-          return order;
-        })
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? updatedOrder : o))
+      );
+      setSelectedOrder((prev) =>
+        prev && prev._id === orderId ? updatedOrder : prev
       );
 
-      // Update modal order if open
-      setSelectedOrder((prev) => {
-        if (!prev) return prev;
-        const updatedItems = prev.items.map((item) =>
-          item._id === itemId ? { ...item, status: "Returned" } : item
-        );
-        return { ...prev, items: updatedItems };
-      });
+      setReturnItem(null);
+      setReason("");
     } catch (error) {
       console.error("Error returning product:", error);
       toast.error(" Failed to return product.");
@@ -290,7 +282,6 @@ const MyOrders = () => {
 
                 <button
                   onClick={() => {
-                    // Only show returnable products in modal if delivered
                     if (order.status === "Delivered") {
                       const filtered = {
                         ...order,
@@ -331,34 +322,86 @@ const MyOrders = () => {
               selectedOrder.items.map((item) => (
                 <div
                   key={item._id}
-                  className="flex items-center justify-between border-b py-3"
+                  className="flex flex-col border-b py-3"
                 >
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={item.productId?.image || ""}
-                      alt={item.productId?.productname || "Product"}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div>
-                      <p className="font-semibold">
-                        {item.productId?.productname}
-                      </p>
-                      <p>Qty: {item.quantity}</p>
-                      <p>₹{item.price}</p>
-                      <p>Status: {item.status}</p>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={item.productId?.image || ""}
+                        alt={item.productId?.productname || "Product"}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div>
+                        <p className="font-semibold">
+                          {item.productId?.productname}
+                        </p>
+                        <p>Qty: {item.quantity}</p>
+                        <p>₹{item.price}</p>
+                        <p>Status: {item.status}</p>
+                      </div>
                     </div>
+                    {item.status !== "Returned" &&
+                      selectedOrder.status === "Delivered" && (
+                        <button
+                          onClick={() => setReturnItem(item)}
+                          className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
+                        >
+                          Return
+                        </button>
+                      )}
                   </div>
-                  {item.status !== "Returned" &&
-                    selectedOrder.status === "Delivered" && (
-                      <button
-                        onClick={() =>
-                          handleReturnProduct(selectedOrder._id, item._id)
-                        }
-                        className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
-                      >
-                        Return
-                      </button>
-                    )}
+
+                  {/* Reason form */}
+                  {returnItem?._id === item._id && (
+                    <div className="mt-3 pl-20">
+                      <h3 className="font-medium text-sm mb-2">
+                        Select Return Reason
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        {[
+                          "Wrong item delivered",
+                          "Damaged/Defective",
+                          "Not as described",
+                          "Other",
+                        ].map((r) => (
+                          <label key={r} className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="reason"
+                              value={r}
+                              checked={reason === r}
+                              onChange={(e) => setReason(e.target.value)}
+                            />
+                            {r}
+                          </label>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() =>
+                            handleReturnProduct(
+                              selectedOrder._id,
+                              item._id,
+                              reason
+                            )
+                          }
+                          disabled={!reason}
+                          className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
+                        >
+                          Submit Return
+                        </button>
+                        <button
+                          onClick={() => {
+                            setReturnItem(null);
+                            setReason("");
+                          }}
+                          className="px-3 py-1 bg-gray-500 text-white rounded"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}
