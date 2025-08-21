@@ -3,6 +3,10 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaTrash } from "react-icons/fa";
+import { FaFileInvoice } from "react-icons/fa6";
+import { IoIosEye } from "react-icons/io";
+
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -260,46 +264,50 @@ const MyOrders = () => {
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-2 mt-4 justify-end">
-                <button
-                  onClick={() => handleDeleteOrder(order._id)}
-                  disabled={order.status === "Delivered"}
-                  className={`px-2 py-1 rounded text-white ${
-                    order.status === "Delivered"
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-red-700 hover:bg-red-800"
-                  }`}
-                >
-                  Cancel
-                </button>
+<div className="flex gap-3 mt-4 justify-end">
+  {/* Cancel (Trash Icon) */}
+  <button
+    onClick={() => handleDeleteOrder(order._id)}
+    disabled={order.status === "Delivered"}
+    className={`p-2 rounded-full text-white flex items-center justify-center ${
+      order.status === "Delivered"
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-red-600 hover:bg-red-700"
+    }`}
+    title="Cancel Order"
+  >
+    <FaTrash size={16} />
+  </button>
 
-                <button
-                  onClick={() => handleDownloadInvoice(order)}
-                  className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  Invoice
-                </button>
+  {/* Invoice (Invoice Icon) */}
+  <button
+    onClick={() => handleDownloadInvoice(order)}
+    className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
+    title="Download Invoice"
+  >
+    <FaFileInvoice size={16} />
+  </button>
 
-                <button
-                  onClick={() => {
-                    if (order.status === "Delivered") {
-                      const filtered = {
-                        ...order,
-                        items: order.items.filter(
-                          (i) => i.status !== "Returned"
-                        ),
-                      };
-                      setSelectedOrder(filtered);
-                    } else {
-                      setSelectedOrder(order);
-                    }
-                    setShowModal(true);
-                  }}
-                  className="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  View
-                </button>
-              </div>
+  {/* View (Eye Icon) */}
+  <button
+    onClick={() => {
+      if (order.status === "Delivered") {
+        const filtered = {
+          ...order,
+          items: order.items.filter((i) => i.status !== "Returned"),
+        };
+        setSelectedOrder(filtered);
+      } else {
+        setSelectedOrder(order);
+      }
+      setShowModal(true);
+    }}
+    className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
+    title="View Order"
+  >
+    <IoIosEye size={18} />
+  </button>
+</div>
             </div>
           ))}
         </div>
