@@ -7,7 +7,6 @@ import { FaTrash } from "react-icons/fa";
 import { FaFileInvoice } from "react-icons/fa6";
 import { IoIosEye } from "react-icons/io";
 
-
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -44,11 +43,14 @@ const MyOrders = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`${import.meta.env.VITE_SERVER_URL}/orders/${orderId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-        },
-      });
+      await axios.delete(
+        `${import.meta.env.VITE_SERVER_URL}/orders/${orderId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
       setOrders((prev) => prev.filter((order) => order._id !== orderId));
       toast.success(" Order deleted successfully!");
     } catch (err) {
@@ -126,7 +128,11 @@ const MyOrders = () => {
     doc.line(14, y + 4, 196, y + 4);
     doc.setFontSize(14);
     doc.setTextColor("#003366");
-    doc.text(`Total Amount: ₹${order.amount?.toFixed(2) || "0.00"}`, 14, y + 14);
+    doc.text(
+      `Total Amount: ₹${order.amount?.toFixed(2) || "0.00"}`,
+      14,
+      y + 14
+    );
 
     doc.setFontSize(10);
     doc.setTextColor("#555");
@@ -145,7 +151,9 @@ const MyOrders = () => {
 
     try {
       const res = await axios.put(
-        `${import.meta.env.VITE_SERVER_URL}/orders/${orderId}/items/${itemId}/return`,
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/orders/${orderId}/items/${itemId}/return`,
         { reason },
         {
           headers: {
@@ -264,50 +272,52 @@ const MyOrders = () => {
               </div>
 
               {/* Buttons */}
-<div className="flex gap-3 mt-4 justify-end">
-  {/* Cancel (Trash Icon) */}
-  <button
-    onClick={() => handleDeleteOrder(order._id)}
-    disabled={order.status === "Delivered"}
-    className={`p-2 rounded-full text-white flex items-center justify-center ${
-      order.status === "Delivered"
-        ? "bg-gray-400 cursor-not-allowed"
-        : "bg-red-600 hover:bg-red-700"
-    }`}
-    title="Cancel Order"
-  >
-    <FaTrash size={16} />
-  </button>
+              <div className="flex gap-3 mt-4 justify-end">
+                {/* Cancel (Trash Icon) */}
+                <button
+                  onClick={() => handleDeleteOrder(order._id)}
+                  disabled={order.status === "Delivered"}
+                  className={`p-2 rounded-full text-white flex items-center justify-center ${
+                    order.status === "Delivered"
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+                  title="Cancel Order"
+                >
+                  <FaTrash size={16} />
+                </button>
 
-  {/* Invoice (Invoice Icon) */}
-  <button
-    onClick={() => handleDownloadInvoice(order)}
-    className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
-    title="Download Invoice"
-  >
-    <FaFileInvoice size={16} />
-  </button>
+                {/* Invoice (Invoice Icon) */}
+                <button
+                  onClick={() => handleDownloadInvoice(order)}
+                  className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center"
+                  title="Download Invoice"
+                >
+                  <FaFileInvoice size={16} />
+                </button>
 
-  {/* View (Eye Icon) */}
-  <button
-    onClick={() => {
-      if (order.status === "Delivered") {
-        const filtered = {
-          ...order,
-          items: order.items.filter((i) => i.status !== "Returned"),
-        };
-        setSelectedOrder(filtered);
-      } else {
-        setSelectedOrder(order);
-      }
-      setShowModal(true);
-    }}
-    className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
-    title="View Order"
-  >
-    <IoIosEye size={18} />
-  </button>
-</div>
+                {/* View (Eye Icon) */}
+                <button
+                  onClick={() => {
+                    if (order.status === "Delivered") {
+                      const filtered = {
+                        ...order,
+                        items: order.items.filter(
+                          (i) => i.status !== "Returned"
+                        ),
+                      };
+                      setSelectedOrder(filtered);
+                    } else {
+                      setSelectedOrder(order);
+                    }
+                    setShowModal(true);
+                  }}
+                  className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
+                  title="View Order"
+                >
+                  <IoIosEye size={18} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -328,10 +338,7 @@ const MyOrders = () => {
               <p>No returnable products available.</p>
             ) : (
               selectedOrder.items.map((item) => (
-                <div
-                  key={item._id}
-                  className="flex flex-col border-b py-3"
-                >
+                <div key={item._id} className="flex flex-col border-b py-3">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <img
@@ -359,57 +366,87 @@ const MyOrders = () => {
                       )}
                   </div>
 
-                  {/* Reason form */}
-                  {returnItem?._id === item._id && (
-                    <div className="mt-3 pl-20">
-                      <h3 className="font-medium text-sm mb-2">
-                        Select Return Reason
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        {[
-                          "Wrong item delivered",
-                          "Damaged/Defective",
-                          "Not as described",
-                          "Other",
-                        ].map((r) => (
-                          <label key={r} className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name="reason"
-                              value={r}
-                              checked={reason === r}
-                              onChange={(e) => setReason(e.target.value)}
-                            />
-                            {r}
-                          </label>
-                        ))}
-                      </div>
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          onClick={() =>
-                            handleReturnProduct(
-                              selectedOrder._id,
-                              item._id,
-                              reason
-                            )
-                          }
-                          disabled={!reason}
-                          className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded"
-                        >
-                          Submit Return
-                        </button>
-                        <button
-                          onClick={() => {
-                            setReturnItem(null);
-                            setReason("");
-                          }}
-                          className="px-3 py-1 bg-gray-500 text-white rounded"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
+{/* Reason form */}
+{returnItem?._id === item._id && (
+  <div className="mt-4 pl-20 border-t pt-4">
+    <h3 className="font-medium text-sm mb-3 text-gray-700">
+      Select Return Reason
+    </h3>
+
+    {/* Styled radio options */}
+    <div className="space-y-3">
+      {[
+        "Wrong item delivered",
+        "Damaged/Defective",
+        "Not as described",
+        "Other",
+      ].map((r) => (
+        <label
+          key={r}
+          className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition 
+            ${
+              reason === r
+                ? "border-yellow-600 bg-yellow-50 shadow-sm"
+                : "border-gray-300 hover:border-yellow-400"
+            }`}
+        >
+          <input
+            type="radio"
+            name="reason"
+            value={r}
+            checked={reason === r}
+            onChange={(e) => setReason(e.target.value)}
+            className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300"
+          />
+          <span className="text-sm text-gray-700">{r}</span>
+        </label>
+      ))}
+    </div>
+
+    {/* Selected reason preview */}
+    {reason && (
+      <div className="mt-4">
+        <label className="block text-xs text-gray-500 mb-1">
+          Selected Reason
+        </label>
+        <input
+          type="text"
+          value={reason}
+          readOnly
+          className="w-full px-3 py-2 border rounded bg-gray-100 cursor-not-allowed text-gray-700"
+        />
+      </div>
+    )}
+
+    {/* Action buttons */}
+    <div className="flex gap-2 mt-4">
+      <button
+        onClick={() =>
+          handleReturnProduct(selectedOrder._id, item._id, reason)
+        }
+        disabled={!reason}
+        className={`px-4 py-2 rounded text-white transition 
+          ${
+            reason
+              ? "bg-yellow-600 hover:bg-yellow-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+      >
+        Submit Return
+      </button>
+      <button
+        onClick={() => {
+          setReturnItem(null);
+          setReason("");
+        }}
+        className="px-4 py-2 bg-gray-500 text-white rounded"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
                 </div>
               ))
             )}
